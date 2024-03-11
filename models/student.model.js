@@ -57,10 +57,10 @@ const studentSchema = new mongoose.Schema({
     },
     isBusCanceled: {
         type: Boolean,
-        default: false
+        default: false 
     }
 }, { collection: 'students', timestamps: true, versionKey: false })
 
 
-const StudentModel = mongoose.model('Student', studentSchema)
-export default StudentModel;
+const Student = mongoose.model('Student', studentSchema)
+export default Student;

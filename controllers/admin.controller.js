@@ -1,4 +1,4 @@
-export const getScanningCounts = async (req, res) => {
+export const getScanningCountByBus = async (req, res) => {
     try {
 
     } catch (error) {
