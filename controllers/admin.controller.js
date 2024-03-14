@@ -99,3 +99,32 @@ export const getDetailsByRollNo = async (req, res) => {
 
     }
 }
+
+
+export const forgotAdminPassword = async (req, res) => {
+    try {
+        const { username, oldPassword, newPassword } = req.body;
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Check if the operator exists
+        const admin = await Admin.findOne({ username: username });
+        if (!operator) {
+            return res.status(404).send({ error: 'User Not Found' });
+        }
+
+        // Compare passwords
+        const isPasswordMatch = await bcrypt.compare(oldPassword, operator.password);
+        if (!isPasswordMatch) {
+            return res.status(400).send({ error: 'Invalid Password' });
+        }
+
+        // Update password
+        admin.password = hashedPassword;
+        await admin.save();
+
+        return res.status(200).send({ message: 'Password Updated Successfully' });
+    } catch (error) {
+        return res.status(500).send({ message: 'Internal Server Error', error: error });
+    }
+
+}
