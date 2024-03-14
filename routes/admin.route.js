@@ -2,6 +2,7 @@ import express from "express"
 import { operatorRegistration } from "../controllers/operator.controller.js";
 import { adminLogin, getDetailsByRollNo, getScanningCountByBus, registerAdmin } from "../controllers/admin.controller.js";
 import { verifyToken } from "../middlewares/authVerify.js";
+import { addStudent, deleteStudent } from "../controllers/student.controller.js";
 
 const adminRouter = express.Router();
 
@@ -16,9 +17,16 @@ adminRouter.post('/admin/register', verifyToken, registerAdmin);
 adminRouter.post('/admin/login', adminLogin)
 
 //getting counts
-adminRouter.get('/admin/getCount/', verifyToken, getScanningCountByBus)
+adminRouter.get('/admin/getcount/', verifyToken, getScanningCountByBus)
 
 //studentDetailsByRollNo
-adminRouter.post('/admin/getStuDetails', verifyToken, getDetailsByRollNo);
+adminRouter.post('/admin/getstudetails', verifyToken, getDetailsByRollNo);
+
+//addStudent
+adminRouter.post('/admin/addstudent', verifyToken, addStudent)
+
+//deleteStudent
+adminRouter.post('/admin/deletestudent', verifyToken, deleteStudent)
+
 
 export default adminRouter;

@@ -51,10 +51,6 @@ const studentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    mappedBus: {
-        type: Number,
-        required: true
-    },
     feePaid: {
         type: Boolean,
         default: false

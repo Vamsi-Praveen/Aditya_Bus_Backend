@@ -1,8 +1,8 @@
-import Student from "../models/student.model";
+import Student from "../models/student.model.js";
 
 export const addStudent = async (req, res) => {
     try {
-        const { firstname, lastname, email, rollno, college, branch, year, semester, phoneNumber, cityName, busRoute, mappedBus } = req.body;
+        const { firstname, lastname, email, rollno, college, branch, year, semester, phoneNumber, cityName, busRoute,passout } = req.body;
         //check weather the student exists or not
         const isStudentExists = await Student.exists({ rollno: rollno });
         if (!isStudentExists) {
@@ -18,7 +18,7 @@ export const addStudent = async (req, res) => {
                 phoneNumber: phoneNumber,
                 cityName: cityName,
                 busRoute: busRoute,
-                mappedBus: mappedBus
+                passout:passout
             });
             await student.save().then((data) => {
                 return res.status(201).send({
