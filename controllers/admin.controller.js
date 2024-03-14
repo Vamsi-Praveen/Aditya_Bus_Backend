@@ -2,6 +2,7 @@ import Admin from "../models/admin.model.js";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import BusCount from "../models/busCount.model.js";
+import Student from "../models/student.model.js";
 
 export const getScanningCountByBus = async (req, res) => {
     try {
@@ -79,6 +80,22 @@ export const adminLogin = async (req, res) => {
     } catch (error) {
         console.log(error)
         return res.status(500).send({ ErrorMessage: "Internal Server Error", error: error })
+
+    }
+}
+
+
+export const getDetailsByRollNo = async (req, res) => {
+    try {
+        const { rollNo } = req.body;
+        const studentDetails = await Student.findOne({ "rollno": rollNo });
+        if (!studentDetails) {
+            return res.status(404).send({ error: "Student Not Found" })
+        }
+        return res.status(200).send({ details: studentDetails })
+    }
+    catch (err) {
+        return res.status(500).send({ ErrorMessage: "Internal Server Error", error: err })
 
     }
 }
