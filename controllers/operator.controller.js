@@ -2,7 +2,7 @@ import bcrypt from "bcrypt"
 import Operator from "../models/operator.model.js";
 import jwt from "jsonwebtoken"
 import Student from "../models/student.model.js";
-
+import { updateBusCount } from "./updateCount.controller.js";
 
 export const operatorLogin = async (req, res) => {
     try {
@@ -30,7 +30,6 @@ export const operatorLogin = async (req, res) => {
 
     }
 }
-
 
 export const operatorRegistration = async (req, res) => {
     try {
@@ -64,15 +63,47 @@ export const operatorRegistration = async (req, res) => {
 
 export const checkStudent = async (req, res) => {
     try {
-        const { rollNo } = req.body;
-        const validStudent = await Student.exists({ rollno: rollNo })
+        const { rollNo, busNumber } = req.body;
+        const validStudent = await Student.findOne({ rollno: rollNo })
         if (validStudent) {
-            return res.status(200).send({ details: validStudent })
+            req.busNumber = busNumber;
+            await updateBusCount(req, res);
+            return res.status(200).send({ details: validStudent });
         }
+        //{todo: if invalid send notifcation to supervisor}
         else {
-            return res.statu(404).send({ 'Error': 'RollNo not exists' })
+            return res.status(404).send({ 'Error': 'RollNo not exists' })
         }
     } catch (error) {
-        return res.status(500).send({ Error: "Internal Server Error", error: error })
+        return;
+        // return res.status(500).send({ Error: "Internal Server Error", error: error })
     }
+}
+
+export const forgotOperatorPassword = async (req, res) => {
+    try {
+        const { operator_id, oldPassword, newPassword } = req.body;
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Check if the operator exists
+        const operator = await Operator.findOne({ operator_id: operator_id });
+        if (!operator) {
+            return res.status(404).send({ error: 'Operator Not Found' });
+        }
+
+        // Compare passwords
+        const isPasswordMatch = await bcrypt.compare(oldPassword, operator.password);
+        if (!isPasswordMatch) {
+            return res.status(400).send({ error: 'Invalid Password' });
+        }
+
+        // Update password
+        operator.password = hashedPassword;
+        await operator.save();
+
+        return res.status(200).send({ message: 'Password Updated Successfully' });
+    } catch (error) {
+        return res.status(500).send({ message: 'Internal Server Error', error: error });
+    }
+
 }

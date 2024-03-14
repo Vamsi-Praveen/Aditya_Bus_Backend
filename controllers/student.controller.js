@@ -37,27 +37,27 @@ export const addStudent = async (req, res) => {
     }
 }
 
-export const mapStudentToBus = async (req, res) => {
-    try {
-
-    } catch (error) {
-
-    }
-}
-
-export const cancelBus = async (req, res) => {
-    try {
-
-    } catch (error) {
-
-    }
-}
 
 export const deleteStudent = async (req, res) => {
     try {
+        const { rollNo } = req.body;
+        const isStudentExists = await Student.exists({ rollno: rollNo });
+        if (isStudentExists) {
+            await Student.findOneAndDelete({ rollno: rollNo })
+                .then((data) => {
+                    return res.status(200).send({ success: 1, deletedData: data });
+                })
+                .catch((err) => {
+                    return res.status(500).send({ ErrorMessage: "Internal Server Error", error: err })
 
+                })
+        }
+        else {
+            return res.status(404).send("No Student Exists")
+        }
     }
     catch (err) {
+        return res.status(500).send({ ErrorMessage: "Internal Server Error", error: err })
 
     }
 }

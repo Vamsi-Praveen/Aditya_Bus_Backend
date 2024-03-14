@@ -31,6 +31,10 @@ const studentSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    passout: {
+        type: Number,
+        required: true
+    },
     email: {
         type: String,
         required: true
@@ -57,7 +61,7 @@ const studentSchema = new mongoose.Schema({
     },
     isBusCanceled: {
         type: Boolean,
-        default: false 
+        default: false
     }
 }, { collection: 'students', timestamps: true, versionKey: false })
 
