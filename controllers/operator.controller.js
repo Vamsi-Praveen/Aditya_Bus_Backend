@@ -3,6 +3,7 @@ import Operator from "../models/operator.model.js";
 import jwt from "jsonwebtoken"
 import Student from "../models/student.model.js";
 import { updateBusCount } from "./updateCount.controller.js";
+import Bus from '../models/buses.model.js';
 
 export const operatorLogin = async (req, res) => {
     try {
@@ -106,4 +107,17 @@ export const forgotOperatorPassword = async (req, res) => {
         return res.status(500).send({ message: 'Internal Server Error', error: error });
     }
 
+}
+
+export const getValidBus = async (req, res) => {
+    try {
+        const { bus } = req.params;
+        const busValid = await Bus.exists({ busNumber: bus })
+        if (!busValid) {
+            return res.status(404).send({ 'message': 'No such bus found.' });
+        }
+        return res.status(200).send({ 'success': 1 })
+    } catch (err) {
+        return res.status(500).send({ message: 'Internal Server Error', error: err })
+    }
 }
