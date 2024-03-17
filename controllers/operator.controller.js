@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken"
 import Student from "../models/student.model.js";
 import { updateBusCount } from "./updateCount.controller.js";
 import Bus from '../models/buses.model.js';
+import ScanData from "../models/scanData.model.js";
 
 export const operatorLogin = async (req, res) => {
     try {
@@ -68,6 +69,7 @@ export const checkStudent = async (req, res) => {
         const validStudent = await Student.findOne({ rollno: rollNo })
         if (validStudent) {
             req.busNumber = busNumber;
+            req.rollNo = rollNo;
             await updateBusCount(req, res);
             return res.status(200).send({ details: validStudent });
         }
@@ -118,6 +120,35 @@ export const getValidBus = async (req, res) => {
         }
         return res.status(200).send({ 'success': 1 })
     } catch (err) {
+        return res.status(500).send({ message: 'Internal Server Error', error: err })
+    }
+}
+
+export const getScannedBusDetails = async (req, res) => {
+    try {
+        const { busNumber, date } = req.body;
+        const getScannedDetails = await ScanData.find({ date: date, busNumber: busNumber })
+        console.log(getScannedDetails)
+        if (!getScannedDetails) {
+            return res.status(404).send({ 'message': 'No Details Found' })
+        }
+        return res.status(200).send({ data: getScannedDetails })
+    }
+    catch (err) {
+        return res.status(500).send({ message: 'Internal Server Error', error: err })
+    }
+}
+
+export const getTodayBus = async (req, res) => {
+    try {
+        const { date } = req.params;
+        const getTodayBusDetails = await ScanData.find({ date: date })
+        if (!getTodayBusDetails) {
+            return res.status(404).send({ 'message': 'No Details Found' })
+        }
+        return res.status(200).send({ data: getTodayBusDetails })
+    }
+    catch (err) {
         return res.status(500).send({ message: 'Internal Server Error', error: err })
     }
 }
