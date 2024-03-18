@@ -13,6 +13,6 @@ operatorRouter.get('/op/validBus/:bus', verifyToken, getValidBus)
 
 operatorRouter.post('/op/getScanData', verifyToken, getScannedBusDetails)
 
-operatorRouter.get('/op/getTodayBus/:date', verifyToken, getTodayBus)
+operatorRouter.get('/op/getTodayBus/:date/:operator', verifyToken, getTodayBus)
 
 export default operatorRouter

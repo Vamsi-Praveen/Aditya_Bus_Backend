@@ -21,6 +21,10 @@ const ScanDataSchema = new mongoose.Schema({
     busNumber: {
         type: Number,
         required: true
+    },
+    operator_id: {
+        type: String,
+        required: true
     }
 }, { collection: 'scan_data', timestamps: true })
 

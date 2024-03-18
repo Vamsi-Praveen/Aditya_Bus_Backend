@@ -23,7 +23,7 @@ export const operatorLogin = async (req, res) => {
                     }
                     const token = jwt.sign({ id: data._id, operator_id: data.operator_id }, process.env.JWT_SECRET)
                     //send the token in authorization header
-                    return res.header('Authorization', `Bearer ${token}`).status(200).send({ "success": 1, "login": true })
+                    return res.header('Authorization', `Bearer ${token}`).status(200).send({ "success": 1, "login": true, 'data': data.operator_id })
                 })
         })
     } catch (error) {
@@ -65,11 +65,12 @@ export const operatorRegistration = async (req, res) => {
 
 export const checkStudent = async (req, res) => {
     try {
-        const { rollNo, busNumber } = req.body;
+        const { rollNo, busNumber, operator } = req.body;
         const validStudent = await Student.findOne({ rollno: rollNo })
         if (validStudent) {
             req.busNumber = busNumber;
             req.rollNo = rollNo;
+            req.operator = operator;
             await updateBusCount(req, res);
             return res.status(200).send({ details: validStudent });
         }
@@ -141,8 +142,8 @@ export const getScannedBusDetails = async (req, res) => {
 
 export const getTodayBus = async (req, res) => {
     try {
-        const { date } = req.params;
-        const getTodayBusDetails = await ScanData.find({ date: date })
+        const { date, operator } = req.params;
+        const getTodayBusDetails = await ScanData.find({ date: date, operator: operator })
         if (!getTodayBusDetails) {
             return res.status(404).send({ 'message': 'No Details Found' })
         }

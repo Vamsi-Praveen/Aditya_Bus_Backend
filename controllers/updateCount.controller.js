@@ -8,6 +8,7 @@ export const updateBusCount = async (req, res) => {
     const date = new Date().toISOString().split('T')[0].split('-').reverse().join('-').toString();
     const busNumber = req.busNumber;
     const rollNo = req.rollNo;
+    const operator = req.operator
     const busValid = await Bus.findOne({ busNumber: busNumber });
     // if (busValid) {
     //     let count = await BusCount.findOne({ date: date, busNumber: busNumber });
@@ -75,6 +76,7 @@ export const updateBusCount = async (req, res) => {
                     busNumber: busNumber,
                     firstName: studentDetails.firstname,
                     lastName: studentDetails.lastname,
+                    operator_id: operator
                 })
                 await newScanData.save();
                 return;
