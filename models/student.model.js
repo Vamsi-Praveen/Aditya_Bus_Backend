@@ -51,9 +51,9 @@ const studentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    feePaid: {
-        type: Boolean,
-        default: false
+    busfee: {
+        type: String,
+        required:true
     },
     isBusCanceled: {
         type: Boolean,

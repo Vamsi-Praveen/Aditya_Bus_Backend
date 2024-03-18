@@ -21,11 +21,6 @@ const adminSchema = new mongoose.Schema({
     phoneNumber: {
         type: String,
         required: true
-    },
-    role: {
-        type: String,
-        enum: ['admin', 'superAdmin'],  // superAdmin is the highest level of access
-        default: 'admin'
     }
 }, { collection: "admin", timestamps: true })
 

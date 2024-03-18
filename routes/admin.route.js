@@ -1,6 +1,6 @@
 import express from "express"
-import { operatorRegistration } from "../controllers/operator.controller.js";
-import { adminLogin, getDetailsByRollNo, getScanningCountByBus, registerAdmin } from "../controllers/admin.controller.js";
+import { delOp, getOperator, operatorRegistration } from "../controllers/operator.controller.js";
+import getTodayData, { adminLogin, changeAdminPassword, getAdminDetails, getDetailsByRollNo, getstudbydata,getScanningCountByBus, logout, registerAdmin, getAllbuses, filteredCities } from "../controllers/admin.controller.js";
 import { verifyToken } from "../middlewares/authVerify.js";
 import { addStudent, deleteStudent } from "../controllers/student.controller.js";
 
@@ -10,23 +10,41 @@ const adminRouter = express.Router();
 adminRouter.post('/op/register', verifyToken, operatorRegistration)
 
 //admin login creation
-
 adminRouter.post('/admin/register', verifyToken, registerAdmin);
 
 //admin login 
 adminRouter.post('/admin/login', adminLogin)
 
+//admin Details
+adminRouter.get('/admin/profile/:id',getAdminDetails);
+
 //getting counts
 adminRouter.get('/admin/getcount/', verifyToken, getScanningCountByBus)
 
-//studentDetailsByRollNo
-adminRouter.post('/admin/getstudetails', verifyToken, getDetailsByRollNo);
 
 //addStudent
 adminRouter.post('/admin/addstudent', verifyToken, addStudent)
 
-//deleteStudent
-adminRouter.post('/admin/deletestudent', verifyToken, deleteStudent)
+//studentDetailsByRollNo
+adminRouter.get('/admin/getstudetails/:id', verifyToken, getDetailsByRollNo);
 
+//deleteStudent
+adminRouter.delete('/admin/deletestudent/:id', verifyToken, deleteStudent)
+
+adminRouter.get('/admin/logout', verifyToken, logout);
+
+adminRouter.get('/op/getOp/:id', getOperator);
+
+adminRouter.delete('/op/delOp/:id', delOp);
+
+adminRouter.post('/admin/changePass', changeAdminPassword);
+
+adminRouter.get('/admin/allbuses', verifyToken, getAllbuses);
+
+adminRouter.get('/admin/stdbybus/:id', verifyToken, getstudbydata);
+
+adminRouter.post('/admin/filtercities', verifyToken, filteredCities);
+
+adminRouter.get('/admin/getTodayData', verifyToken, getTodayData);
 
 export default adminRouter;

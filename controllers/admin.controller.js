@@ -3,7 +3,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import BusCount from "../models/busCount.model.js";
 import Student from "../models/student.model.js";
-
+import ScanData from "../models/scan_data.model.js";
 export const getScanningCountByBus = async (req, res) => {
     try {
         const { date, bus } = req.query;
@@ -57,7 +57,7 @@ export const registerAdmin = async (req, res) => {
 
 //admin login
 
-export const adminLogin = async (req, res) => {
+export const adminLogin = async (req, res, next) => {
     try {
         //getting username and password
         const { username, password } = req.body;
@@ -73,6 +73,7 @@ export const adminLogin = async (req, res) => {
                         return res.status(404).send({ 'Error': 'Invalid Password' })
                     }
                     const token = jwt.sign({ id: data._id, username: data.username }, process.env.JWT_SECRET)
+
                     //send the token in authorization header
                     return res.header('Authorization', `Bearer ${token}`).status(200).send({ "success": 1, "login": true })
                 })
@@ -87,12 +88,10 @@ export const adminLogin = async (req, res) => {
 
 export const getDetailsByRollNo = async (req, res) => {
     try {
-        const { rollNo } = req.body;
-        const studentDetails = await Student.findOne({ "rollno": rollNo });
-        if (!studentDetails) {
-            return res.status(404).send({ error: "Student Not Found" })
-        }
-        return res.status(200).send({ details: studentDetails })
+        const { id } = req.params;
+        const student = await Student.findOne({rollno:id})
+        if(student){ return res.status(200).json({message:'success', student});}
+        return res.status(400).json({message:'fail'})
     }
     catch (err) {
         return res.status(500).send({ ErrorMessage: "Internal Server Error", error: err })
@@ -101,19 +100,18 @@ export const getDetailsByRollNo = async (req, res) => {
 }
 
 
-export const forgotAdminPassword = async (req, res) => {
+export const changeAdminPassword = async (req, res) => {
     try {
-        const { username, oldPassword, newPassword } = req.body;
+        const { id, oldPassword, newPassword } = req.body;
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-
         // Check if the operator exists
-        const admin = await Admin.findOne({ username: username });
-        if (!operator) {
+        const admin = await Admin.findOne({ _id: id });
+        if (!admin) {
             return res.status(404).send({ error: 'User Not Found' });
         }
 
         // Compare passwords
-        const isPasswordMatch = await bcrypt.compare(oldPassword, operator.password);
+        const isPasswordMatch = await bcrypt.compare(oldPassword, admin.password);
         if (!isPasswordMatch) {
             return res.status(400).send({ error: 'Invalid Password' });
         }
@@ -128,3 +126,106 @@ export const forgotAdminPassword = async (req, res) => {
     }
 
 }
+
+export const logout = (req, res) => {
+    const token = req.headers['authorization'];
+    if (!token) {
+        return res.status(401).send({ error: "UnAuthorized" });
+    }
+    const accessToken = token.split(' ')[1];
+    res.send({message:'success'})
+}
+
+export const getAdminDetails =async (req, res) =>{
+    try{
+        const {id} = req.params;
+        let admin = await Admin.findOne({_id:id}, "-password");
+        if(!admin) return res.status(404).json('Error fetching data');
+        return res.status(200).json(admin);
+    }catch(err){
+        console.log(err);
+    }
+}
+
+export const getAllbuses = async(req, res) =>{
+    try{
+        const buses = await ScanData.find({}, {busNumber:1});
+        const busCounts = Object.entries(
+            buses.reduce((acc, bus) => {
+              acc[bus.busNumber] = (acc[bus.busNumber] || 0) + 1;
+              return acc;
+            }, {})
+          ).map(([busNumber, count]) => ({ busNumber: parseInt(busNumber), count }));
+        res.status(200).json(busCounts);
+    }catch(err){
+        console.log(err);
+    }
+}
+
+export const getstudbydata = async(req, res)=>{
+    try{
+        const {id} = req.params;
+        const buses = await ScanData.find({busNumber:id}, {busNumber:1, rollNo:1, firstName:1, lastName:1});
+        res.status(200).json(buses);
+    }catch(err){
+        console.log(err);
+    }
+}
+
+export const filteredCities = async(req, res)=>{
+    try{
+        const {city} = req.body;
+        const students = await Student.find({cityName:city});
+        let arr=[]
+        for(let i=0;i<students.length;i++){
+            arr.push(students[i].rollno);
+        }
+        const buses = await ScanData.find({ rollNo: { $in: arr } }, {busNumber:1, _id:0});
+        const busCounts = Object.entries(
+            buses.reduce((acc, bus) => {
+              acc[bus.busNumber] = (acc[bus.busNumber] || 0) + 1;
+              return acc;
+            }, {})
+          ).map(([busNumber, count]) => ({ busNumber: parseInt(busNumber), count }));
+        //   console.log(busCounts);
+        res.status(200).json(busCounts);
+    }catch(err){
+        console.log(err);
+    }
+}
+    
+export const getTodayData = async (req,res) => {
+  try {
+    const result = await ScanData.aggregate([
+      {
+        $lookup: {
+          from: "students",
+          localField: "rollNo",
+          foreignField: "rollno",
+          as: "studentDetails"
+        }
+      },
+      { $unwind: "$studentDetails" },
+      {
+        $group: {
+          _id: { busNumber: "$busNumber", city: "$studentDetails.cityName" },
+          studentCount: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          busNumber: "$_id.busNumber",
+          studentCount: 1,
+          city: "$_id.city"
+        }
+      }
+    ]);
+    return res.status(200).send(result);
+  } catch (error) {
+    console.error("Error while aggregating data:", error);
+    throw error;
+  }
+};
+
+export default getTodayData;
