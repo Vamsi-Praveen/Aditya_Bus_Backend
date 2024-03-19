@@ -4,7 +4,6 @@ const ScanDataSchema = new mongoose.Schema({
     rollNo: {
         type: String,
         required: true,
-        unique: true
     },
     firstName: {
         type: String,

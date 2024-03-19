@@ -5,6 +5,7 @@ import Student from "../models/student.model.js";
 import { updateBusCount } from "./updateCount.controller.js";
 import Bus from '../models/buses.model.js';
 import ScanData from "../models/scanData.model.js";
+import Fraud from "../models/fraud.model.js";
 
 export const operatorLogin = async (req, res) => {
     try {
@@ -66,17 +67,37 @@ export const operatorRegistration = async (req, res) => {
 export const checkStudent = async (req, res) => {
     try {
         const { rollNo, busNumber, operator } = req.body;
+        const date = new Date().toISOString().split('T')[0].split('-').reverse().join('-')
         const validStudent = await Student.findOne({ rollno: rollNo })
         if (validStudent) {
             req.busNumber = busNumber;
             req.rollNo = rollNo;
-            req.operator = operator;
+            req.operator = operator
             await updateBusCount(req, res);
             return res.status(200).send({ details: validStudent });
         }
         //{todo: if invalid send notifcation to supervisor}
         else {
-            return res.status(404).send({ 'Error': 'RollNo not exists' })
+            const isFraudAlreadyDetected = await Fraud.exists({ 'rollNo': rollNo, 'date': date });
+            if (!isFraudAlreadyDetected) {
+                const fraud = new Fraud({
+                    rollNo: rollNo,
+                    busNumber: busNumber,
+                    operator: operator,
+                    date: date
+                })
+
+                await fraud.save().then(() => {
+                    return res.status(404).send({ 'Error': 'RollNo not exists', Message: 'Added Entry' })
+                })
+                    .catch((err) => {
+                        return res.status(500).send({ 'error': err })
+                    })
+            }
+            else {
+                return res.status(403).send({ 'error': 'Fraud Already Scanned' });
+            }
+
         }
     } catch (error) {
         return;
@@ -143,7 +164,8 @@ export const getScannedBusDetails = async (req, res) => {
 export const getTodayBus = async (req, res) => {
     try {
         const { date, operator } = req.params;
-        const getTodayBusDetails = await ScanData.find({ date: date, operator: operator })
+        console.log(date, operator)
+        const getTodayBusDetails = await ScanData.find({ date: date, operator_id: operator })
         if (!getTodayBusDetails) {
             return res.status(404).send({ 'message': 'No Details Found' })
         }
