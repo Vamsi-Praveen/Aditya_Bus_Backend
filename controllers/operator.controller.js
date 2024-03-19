@@ -3,6 +3,9 @@ import Operator from "../models/operator.model.js";
 import jwt from "jsonwebtoken"
 import Student from "../models/student.model.js";
 import { updateBusCount } from "./updateCount.controller.js";
+import Bus from '../models/buses.model.js';
+import ScanData from "../models/scanData.model.js";
+import Fraud from "../models/fraud.model.js";
 
 export const operatorLogin = async (req, res) => {
     try {
@@ -21,7 +24,7 @@ export const operatorLogin = async (req, res) => {
                     }
                     const token = jwt.sign({ id: data._id, operator_id: data.operator_id }, process.env.JWT_SECRET)
                     //send the token in authorization header
-                    return res.header('Authorization', `Bearer ${token}`).status(200).send({ "success": 1, "login": true })
+                    return res.header('Authorization', `Bearer ${token}`).status(200).send({ "success": 1, "login": true, 'data': data.operator_id })
                 })
         })
     } catch (error) {
@@ -62,16 +65,38 @@ export const operatorRegistration = async (req, res) => {
 
 export const checkStudent = async (req, res) => {
     try {
-        const { rollNo, busNumber } = req.body;
+        const { rollNo, busNumber, operator } = req.body;
+        const date = new Date().toISOString().split('T')[0].split('-').reverse().join('-')
         const validStudent = await Student.findOne({ rollno: rollNo })
         if (validStudent) {
             req.busNumber = busNumber;
+            req.rollNo = rollNo;
+            req.operator = operator
             await updateBusCount(req, res);
             return res.status(200).send({ details: validStudent });
         }
         //{todo: if invalid send notifcation to supervisor}
         else {
-            return res.status(404).send({ 'Error': 'RollNo not exists' })
+            const isFraudAlreadyDetected = await Fraud.exists({ 'rollNo': rollNo, 'date': date });
+            if (!isFraudAlreadyDetected) {
+                const fraud = new Fraud({
+                    rollNo: rollNo,
+                    busNumber: busNumber,
+                    operator: operator,
+                    date: date
+                })
+
+                await fraud.save().then(() => {
+                    return res.status(404).send({ 'Error': 'RollNo not exists', Message: 'Added Entry' })
+                })
+                    .catch((err) => {
+                        return res.status(500).send({ 'error': err })
+                    })
+            }
+            else {
+                return res.status(403).send({ 'error': 'Fraud Already Scanned' });
+            }
+
         }
     } catch (error) {
         return;
@@ -125,5 +150,47 @@ export const delOp = async (req, res) => {
         return res.status(200).json(operator);
     }catch(err){
         console.log(err);
+
+export const getValidBus = async (req, res) => {
+    try {
+        const { bus } = req.params;
+        const busValid = await Bus.exists({ busNumber: bus })
+        if (!busValid) {
+            return res.status(404).send({ 'message': 'No such bus found.' });
+        }
+        return res.status(200).send({ 'success': 1 })
+    } catch (err) {
+        return res.status(500).send({ message: 'Internal Server Error', error: err })
+    }
+}
+
+export const getScannedBusDetails = async (req, res) => {
+    try {
+        const { busNumber, date } = req.body;
+        const getScannedDetails = await ScanData.find({ date: date, busNumber: busNumber })
+        console.log(getScannedDetails)
+        if (!getScannedDetails) {
+            return res.status(404).send({ 'message': 'No Details Found' })
+        }
+        return res.status(200).send({ data: getScannedDetails })
+    }
+    catch (err) {
+        return res.status(500).send({ message: 'Internal Server Error', error: err })
+    }
+}
+
+export const getTodayBus = async (req, res) => {
+    try {
+        const { date, operator } = req.params;
+        console.log(date, operator)
+        const getTodayBusDetails = await ScanData.find({ date: date, operator_id: operator })
+        if (!getTodayBusDetails) {
+            return res.status(404).send({ 'message': 'No Details Found' })
+        }
+        return res.status(200).send({ data: getTodayBusDetails })
+    }
+    catch (err) {
+        return res.status(500).send({ message: 'Internal Server Error', error: err })
+
     }
 }

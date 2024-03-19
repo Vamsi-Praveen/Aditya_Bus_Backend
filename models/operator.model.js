@@ -12,7 +12,6 @@ const operatorSchema = new mongoose.Schema({
     operator_id: {
         type: String,
         required: true,
-        unique: true
     },
     phoneNumber: {
         type: String,

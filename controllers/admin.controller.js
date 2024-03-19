@@ -39,8 +39,8 @@ export const registerAdmin = async (req, res) => {
         if (!isUserExists) {
             let hashedPassword = await bcrypt.hash(password, 10)
             const admin = new Admin({
-                firstname: firstname,
-                lastname: lastname,
+                firstName: firstname,
+                lastName: lastname,
                 phoneNumber: phoneNumber,
                 username: username,
                 password: hashedPassword,

@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+
+import mongoose from "mongoose"
 
 const fraud_schema = new mongoose.Schema({
     rollNo: {
@@ -19,5 +20,5 @@ const fraud_schema = new mongoose.Schema({
     }
 },{ collection: 'black_sheeps' })
 
-const Fraud = mongoose.model('Fraud',fraud_schema);
+const Fraud = mongoose.model('Fraud', fraud_schema)
 export default Fraud
