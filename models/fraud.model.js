@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose"
 
 const fraud_schema = new mongoose.Schema({
@@ -17,8 +18,7 @@ const fraud_schema = new mongoose.Schema({
         type: Number,
         required: true
     }
-}, { collection: 'black_sheeps' })
-
+},{ collection: 'black_sheeps' })
 
 const Fraud = mongoose.model('Fraud', fraud_schema)
 export default Fraud

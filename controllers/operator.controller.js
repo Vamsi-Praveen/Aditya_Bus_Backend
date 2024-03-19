@@ -47,13 +47,12 @@ export const operatorRegistration = async (req, res) => {
                 lastname: lastname,
                 phoneNumber: phoneNumber,
                 operator_id: operator_id,
-                password: hashedPassword,
+                password: hashedPassword
             })
-            await operator.save().then((data) => {
-                return res.send({ success: 1 }).status(200)
-            }).catch((err) => {
-                return res.status(500).send({ ErrorMessage: "Internal Server Error", error: err })
-            })
+            await operator.save();
+            console.log(firstname);
+            return res.status(200).json('success');
+              
         }
         else {
             return res.status(400).send("Operator Already Exists")
@@ -132,6 +131,25 @@ export const forgotOperatorPassword = async (req, res) => {
     }
 
 }
+export const getOperator = async (req, res) =>{
+    try{
+        const {id} = req.params;
+        let operator = await Operator.findOne({operator_id:id}, {firstname:1, lastname:1, operator_id:1, phoneNumber:1, _id:0});
+        if(operator){ return res.status(200).json({message:'success', operator});}
+        return res.status(400).json({message:'fail'})
+    }catch(err){
+        console.log(err);
+    }
+
+}
+
+export const delOp = async (req, res) => {
+    try{
+        const {id} = req.params;
+        let operator = await Operator.findOneAndDelete({operator_id:id});
+        return res.status(200).json(operator);
+    }catch(err){
+        console.log(err);
 
 export const getValidBus = async (req, res) => {
     try {
@@ -173,5 +191,6 @@ export const getTodayBus = async (req, res) => {
     }
     catch (err) {
         return res.status(500).send({ message: 'Internal Server Error', error: err })
+
     }
 }
