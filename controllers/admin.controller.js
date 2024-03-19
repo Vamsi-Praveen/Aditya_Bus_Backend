@@ -262,7 +262,8 @@ export const Unauthorized = async(req,res) => {
 
 export const UnauthCount = async(req,res) => {
     try {
-        const count = await Fraud.find({date:Date.now()})
+        const today = new Date().toISOString().split('T')[0].split('-').reverse().join('-');
+        const count = await Fraud.find({date:today})
         res.status(200).json(count.length)
     } catch (error) {
         console.log(error);
