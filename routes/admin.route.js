@@ -1,6 +1,6 @@
 import express from "express"
 import { delOp, getOperator, operatorRegistration } from "../controllers/operator.controller.js";
-import getTodayData, { adminLogin, changeAdminPassword, getAdminDetails, getDetailsByRollNo, getstudbydata,getScanningCountByBus, logout, registerAdmin, getAllbuses, filteredCities } from "../controllers/admin.controller.js";
+import {getTodayData, adminLogin, changeAdminPassword, getAdminDetails, getDetailsByRollNo, getstudbydata,getScanningCountByBus, logout, registerAdmin, getAllbuses, filteredCities, alloperators, allStudents, Unauthorized, UnauthCount } from "../controllers/admin.controller.js";
 import { verifyToken } from "../middlewares/authVerify.js";
 import { addStudent, deleteStudent } from "../controllers/student.controller.js";
 
@@ -46,5 +46,13 @@ adminRouter.get('/admin/stdbybus/:id', verifyToken, getstudbydata);
 adminRouter.post('/admin/filtercities', verifyToken, filteredCities);
 
 adminRouter.get('/admin/getTodayData', verifyToken, getTodayData);
+
+adminRouter.get('/admin/alloperators', verifyToken, alloperators);
+
+adminRouter.get('/admin/allStudents',verifyToken,allStudents);
+
+adminRouter.get('/admin/unauthorized',verifyToken, Unauthorized);
+
+adminRouter.get('/admin/unauthCount',verifyToken, UnauthCount);
 
 export default adminRouter;

@@ -4,6 +4,11 @@ import jwt from "jsonwebtoken"
 import BusCount from "../models/busCount.model.js";
 import Student from "../models/student.model.js";
 import ScanData from "../models/scan_data.model.js";
+import Operator from "../models/operator.model.js";
+import Fraud from "../models/fraud.model.js";
+
+
+
 export const getScanningCountByBus = async (req, res) => {
     try {
         const { date, bus } = req.query;
@@ -228,4 +233,38 @@ export const getTodayData = async (req,res) => {
   }
 };
 
-export default getTodayData;
+export const alloperators = async(req, res)=>{
+    try{
+        const operators = await Operator.find();
+        res.status(200).json(operators);
+    }catch(err){
+        console.log(err);
+    }
+}
+
+export const allStudents = async(req,res) => {
+    try {
+        const students = await Student.find();
+        res.status(200).json(students);
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export const Unauthorized = async(req,res) => {
+        try {
+            const unauth = await Fraud.find().sort({ date: -1 });
+            res.status(200).json(unauth);
+        } catch (error) {
+            console.log(error);
+        }
+}
+
+export const UnauthCount = async(req,res) => {
+    try {
+        const count = await Fraud.find({date:Date.now()})
+        res.status(200).json(count.length)
+    } catch (error) {
+        console.log(error);
+    }
+}
