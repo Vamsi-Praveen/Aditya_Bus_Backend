@@ -101,7 +101,7 @@ export const getDetailsByRollNo = async (req, res) => {
 }
 
 
-export const forgotAdminPassword = async (req, res) => {
+export const changeAdminPassword = async (req, res) => {
     try {
         const { username, oldPassword, newPassword } = req.body;
         const hashedPassword = await bcrypt.hash(newPassword, 10);
